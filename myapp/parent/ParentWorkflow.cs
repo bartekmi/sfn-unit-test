@@ -1,14 +1,15 @@
 using sfn_ut.sfn;
 using sfn_ut.myapp.child;
+using sfn_ut.sfn.nested;
 
 namespace sfn_ut.myapp.parent;
 
-public class ParentWorkflow : SfnWorkflow<ParentParams> {
+public class ParentWorkflow : SfnWorkflow<ParentPayload> {
   public ParentWorkflow() : base(new ErrorHandler()) {
     // Do nothing
   }
 
-  public override ParentParams Run(ParentParams payload) {
+  public override ParentPayload Run(ParentPayload payload) {
     payload = Lambda(new Step10_AppendTen(), payload);
 
     payload = NestedSfn(
@@ -18,6 +19,10 @@ public class ParentWorkflow : SfnWorkflow<ParentParams> {
       payload);
     
     payload = Lambda(new Step30_AppendThirty(), payload);
+
+    payload = Parallel([ new Step40a_Foo(), new Step40b_Bar() ], 
+      new Step40_Assember(),
+      payload);
 
     return payload;
   }

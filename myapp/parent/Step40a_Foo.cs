@@ -2,9 +2,9 @@ using sfn_ut.sfn.lambda;
 
 namespace sfn_ut.myapp.parent;
 
-public class Step10_AppendTen : SfnLambda<ParentPayload> {
+public class Step40a_Foo : SfnLambda<ParentPayload> {
   public override ParentPayload Execute(ParentPayload payload) {
-    payload.Step10 = payload.OriginalInput + " Ten";
+    payload.Step40a = "Foo";
     return payload;
   }
 }

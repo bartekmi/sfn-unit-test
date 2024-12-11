@@ -2,6 +2,7 @@ using sfn_ut.sfn.lambda;
 using sfn_ut.sfn.nested;
 using sfn_ut.sfn.await;
 using sfn_ut.sfn.error;
+using sfn_ut.sfn.parallel;
 
 namespace sfn_ut.sfn;
 
@@ -10,18 +11,24 @@ public enum Mode {
   ExtractMetadata
 }
 
-public abstract class SfnWorkflow<PARENT>(SfnErrorHandler<PARENT> errorHandler) : SfnStep {
+public abstract class SfnWorkflow<PAYLOAD> {
   public List<SfnStep> Steps { get; set; } = [];
-  public SfnErrorHandler<PARENT> ErrorHandler { get; set; } = errorHandler;
+  public SfnErrorHandler<PAYLOAD> ErrorHandler { get; set; }
+  public string WorkflowName { get; private set; }
 
-  public abstract PARENT Run(PARENT input);
+  public abstract PAYLOAD Run(PAYLOAD input);
 
-  private void HandleErrorInternal(PARENT payload, Exception e) {
-    // Do logging, assertions, etc
-    ErrorHandler.Execute(new SfnErrorHandlerInput<PARENT>(payload, e.Message));
+  public SfnWorkflow(SfnErrorHandler<PAYLOAD> errorHandler) {
+    ErrorHandler = errorHandler;
+    WorkflowName = GetType().FullName!;
   }
 
-  public PARENT Lambda(SfnLambda<PARENT> lambda, PARENT input) {
+  internal void HandleErrorInternal(PAYLOAD payload, Exception e) {
+    // Do logging, assertions, etc
+    ErrorHandler.Execute(new SfnErrorHandlerInput<PAYLOAD>(payload, e.Message));
+  }
+
+  public PAYLOAD Lambda(SfnLambda<PAYLOAD> lambda, PAYLOAD input) {
     Steps.Add(lambda);
 
     try {
@@ -32,7 +39,7 @@ public abstract class SfnWorkflow<PARENT>(SfnErrorHandler<PARENT> errorHandler) 
     }
   }
 
-  public PARENT LambdaWithAwait(SfnLambdaWithAwait<PARENT> lambdaWithAwait, PARENT payload) {
+  public PAYLOAD LambdaWithAwait(SfnLambdaWithAwait<PAYLOAD> lambdaWithAwait, PAYLOAD payload) {
     Steps.Add(lambdaWithAwait);
 
     try {
@@ -43,25 +50,36 @@ public abstract class SfnWorkflow<PARENT>(SfnErrorHandler<PARENT> errorHandler) 
     }
   }
 
-  public PARENT NestedSfn<CHILD>(
-    SfnTransform<PARENT, CHILD> transformInput,
-    SfnWorkflow<CHILD> sfn, 
-    SfnMerge<PARENT,CHILD> mergeOutput,
-    PARENT input) {
+  public PAYLOAD Parallel(List<SfnStepWithPayload<PAYLOAD>> steps, SfnParallelResultsAssembler<PAYLOAD> assembler, PAYLOAD payload) {
+    SfnParallel<PAYLOAD> parallel = new (steps, assembler);
+
+    Steps.Add(parallel);
+    Steps.Add(assembler);
 
     try {
-      // Transform payload of this Workflow to what is needed by the Child
-      Steps.Add(transformInput);
-      CHILD childIn = transformInput.Execute(input);
-
-      Steps.Add(sfn);
-      CHILD childOut = sfn.Run(childIn);
-
-      // Merge Child output payload back into the Parent payload
-      Steps.Add(mergeOutput);
-      return mergeOutput.Execute(new(input, childOut));
+      return parallel.Execute(payload);
     } catch (Exception e) {
-      HandleErrorInternal(input, e);
+      HandleErrorInternal(payload, e);
+      throw;
+    }
+  }
+
+  public PAYLOAD NestedSfn<CHILD>(
+    SfnTransform<PAYLOAD, CHILD> transform,
+    SfnWorkflow<CHILD> nested, 
+    SfnMerge<PAYLOAD,CHILD> merge,
+    PAYLOAD payload) {
+
+    SfnWorkflowInvocation<PAYLOAD,CHILD> nestedInvocation = new (transform, nested, merge);
+
+    Steps.Add(transform);
+    Steps.Add(nestedInvocation);
+    Steps.Add(merge);
+
+    try {
+      return nestedInvocation.Execute(payload);
+    } catch (Exception e) {
+      HandleErrorInternal(payload, e);
       throw;
     }
   }
