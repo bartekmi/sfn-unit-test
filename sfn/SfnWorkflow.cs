@@ -39,7 +39,12 @@ public abstract class SfnWorkflow<PAYLOAD> {
     }
   }
 
-  public PAYLOAD LambdaWithAwait(SfnLambdaWithAwait<PAYLOAD> lambdaWithAwait, PAYLOAD payload) {
+  public PAYLOAD LambdaWithAwait(
+    SfnLambda<PAYLOAD> lambda,
+    SfnIsComplete<PAYLOAD> isComplete,
+    PAYLOAD payload
+    ) {
+    SfnLambdaWithAwait<PAYLOAD> lambdaWithAwait = new(lambda, isComplete);
     Steps.Add(lambdaWithAwait);
 
     try {

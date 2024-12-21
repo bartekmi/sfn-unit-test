@@ -7,4 +7,5 @@ public class ParentPayload(string originalInput) {
   public string? Step30 { get; set; }
   public string? Step40a { get; set; }
   public string? Step40b { get; set; }
+  public string? AsyncOpStarted { get; set; }
 }

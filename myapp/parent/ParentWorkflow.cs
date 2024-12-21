@@ -20,9 +20,18 @@ public class ParentWorkflow : SfnWorkflow<ParentPayload> {
     
     payload = Lambda(new Step30_AppendThirty(), payload);
 
-    payload = Parallel([ new Step40a_Foo(), new Step40b_Bar() ], 
+    payload = Parallel([ 
+        new Step40a_Foo(), 
+        new Step40b_Bar()
+      ], 
       new Step40_Assember(),
       payload);
+
+    payload = LambdaWithAwait(
+      new Step50_AsyncOp(),
+      new Step50_AsyncOpIsComplete(),
+      payload
+    );
 
     return payload;
   }
