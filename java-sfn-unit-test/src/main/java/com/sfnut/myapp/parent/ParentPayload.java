@@ -25,54 +25,24 @@ public class ParentPayload {
         this.happyPathData = originalInput;
     }
 
-    // Default constructor for Jackson
     public ParentPayload() {}
 
-    public String getHappyPathData() {
-        return happyPathData;
-    }
-
-    public void setHappyPathData(String happyPathData) {
-        this.happyPathData = happyPathData;
-    }
-
-    public Integer getDataFromChild() {
-        return dataFromChild;
-    }
-
-    public void setDataFromChild(Integer dataFromChild) {
-        this.dataFromChild = dataFromChild;
-    }
-
-    public String getParallelA() {
-        return parallelA;
-    }
-
-    public void setParallelA(String parallelA) {
-        this.parallelA = parallelA;
-    }
-
-    public String getParallelB() {
-        return parallelB;
-    }
-
-    public void setParallelB(String parallelB) {
-        this.parallelB = parallelB;
-    }
-
-    public boolean isAsyncOpStarted() {
-        return asyncOpStarted;
-    }
-
-    public void setAsyncOpStarted(boolean asyncOpStarted) {
-        this.asyncOpStarted = asyncOpStarted;
-    }
-
-    public int getLambdaLoopIteration() {
-        return lambdaLoopIteration;
-    }
-
-    public void setLambdaLoopIteration(int lambdaLoopIteration) {
-        this.lambdaLoopIteration = lambdaLoopIteration;
-    }
+    // Getters and setters
+    public String getHappyPathData() { return happyPathData; }
+    public void setHappyPathData(String happyPathData) { this.happyPathData = happyPathData; }
+    
+    public Integer getDataFromChild() { return dataFromChild; }
+    public void setDataFromChild(Integer dataFromChild) { this.dataFromChild = dataFromChild; }
+    
+    public String getParallelA() { return parallelA; }
+    public void setParallelA(String parallelA) { this.parallelA = parallelA; }
+    
+    public String getParallelB() { return parallelB; }
+    public void setParallelB(String parallelB) { this.parallelB = parallelB; }
+    
+    public boolean isAsyncOpStarted() { return asyncOpStarted; }
+    public void setAsyncOpStarted(boolean asyncOpStarted) { this.asyncOpStarted = asyncOpStarted; }
+    
+    public int getLambdaLoopIteration() { return lambdaLoopIteration; }
+    public void setLambdaLoopIteration(int lambdaLoopIteration) { this.lambdaLoopIteration = lambdaLoopIteration; }
 }

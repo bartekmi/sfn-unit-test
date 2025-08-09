@@ -14,22 +14,12 @@ public class SfnMergeInput<PARENT, CHILD> {
         this.child = child;
     }
 
-    // Default constructor for Jackson
     public SfnMergeInput() {}
 
-    public PARENT getParent() {
-        return parent;
-    }
-
-    public void setParent(PARENT parent) {
-        this.parent = parent;
-    }
-
-    public CHILD getChild() {
-        return child;
-    }
-
-    public void setChild(CHILD child) {
-        this.child = child;
-    }
+    // Getters and setters
+    public PARENT getParent() { return parent; }
+    public void setParent(PARENT parent) { this.parent = parent; }
+    
+    public CHILD getChild() { return child; }
+    public void setChild(CHILD child) { this.child = child; }
 }

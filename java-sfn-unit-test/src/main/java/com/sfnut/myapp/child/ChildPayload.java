@@ -13,22 +13,12 @@ public class ChildPayload {
         this.happyPathData = fromParent;
     }
 
-    // Default constructor for Jackson
     public ChildPayload() {}
 
-    public String getHappyPathData() {
-        return happyPathData;
-    }
-
-    public void setHappyPathData(String happyPathData) {
-        this.happyPathData = happyPathData;
-    }
-
-    public int getServiceChargeInDollars() {
-        return serviceChargeInDollars;
-    }
-
-    public void setServiceChargeInDollars(int serviceChargeInDollars) {
-        this.serviceChargeInDollars = serviceChargeInDollars;
-    }
+    // Getters and setters
+    public String getHappyPathData() { return happyPathData; }
+    public void setHappyPathData(String happyPathData) { this.happyPathData = happyPathData; }
+    
+    public int getServiceChargeInDollars() { return serviceChargeInDollars; }
+    public void setServiceChargeInDollars(int serviceChargeInDollars) { this.serviceChargeInDollars = serviceChargeInDollars; }
 }

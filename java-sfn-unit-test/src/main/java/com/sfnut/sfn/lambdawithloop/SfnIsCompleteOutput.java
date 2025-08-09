@@ -14,22 +14,12 @@ public class SfnIsCompleteOutput<PAYLOAD> {
         this.isComplete = isComplete;
     }
 
-    // Default constructor for Jackson
     public SfnIsCompleteOutput() {}
 
-    public PAYLOAD getPayload() {
-        return payload;
-    }
-
-    public void setPayload(PAYLOAD payload) {
-        this.payload = payload;
-    }
-
-    public boolean isComplete() {
-        return isComplete;
-    }
-
-    public void setComplete(boolean complete) {
-        isComplete = complete;
-    }
+    // Getters and setters
+    public PAYLOAD getPayload() { return payload; }
+    public void setPayload(PAYLOAD payload) { this.payload = payload; }
+    
+    public boolean isComplete() { return isComplete; }
+    public void setComplete(boolean complete) { isComplete = complete; }
 }

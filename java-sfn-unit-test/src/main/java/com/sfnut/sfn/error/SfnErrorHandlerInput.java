@@ -14,22 +14,12 @@ public class SfnErrorHandlerInput<PAYLOAD> {
         this.errorMessage = errorMessage;
     }
 
-    // Default constructor for Jackson
     public SfnErrorHandlerInput() {}
 
-    public PAYLOAD getPayload() {
-        return payload;
-    }
-
-    public void setPayload(PAYLOAD payload) {
-        this.payload = payload;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+    // Getters and setters
+    public PAYLOAD getPayload() { return payload; }
+    public void setPayload(PAYLOAD payload) { this.payload = payload; }
+    
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 }
