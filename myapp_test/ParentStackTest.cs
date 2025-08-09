@@ -2,33 +2,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 using sfn_ut.myapp.parent;
-using sfn_ut.myapp.child;
 using sfn_ut.sfn;
 
 namespace sfn_ut.myapp_test;
 
 public class ParentStackTest : SfnUnitTest {
   public static void RunTests() {
-    RunChild();
     RunParent();
   }
 
   private static void RunParent() {
-    ParentPayload input = new("Bartek");
+    ParentPayload input = new("Start");
 
     SfnWorkflow<ParentPayload> workflow = new ParentWorkflow(); 
     ParentPayload output = workflow.Run(input);
 
     RunTest("Parent", output, workflow);
-  }
-
-  private static void RunChild() {
-    ChildPayload input = new("Bartek");
-
-    SfnWorkflow<ChildPayload> workflow = new ChildWorkflow(); 
-    ChildPayload output = workflow.Run(input);
-
-    RunTest("Child", output, workflow);
   }
 
   private static void RunTest<OUTPUT>(string name, OUTPUT output, SfnWorkflow<OUTPUT> workflow) {

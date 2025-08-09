@@ -1,9 +1,9 @@
 namespace sfn_ut.sfn.nested;
 
-public abstract class SfnTransform<INPUT,OUTPUT> : SfnStep {
+public abstract class SfnTransform<INPUT, OUTPUT> : SfnStep {
   public abstract OUTPUT Execute(INPUT input);
 
-  public SfnTransform() : base(StepType.Transform) {
+  public SfnTransform() : base(StepType.InputAdapter) {
     // Do nothing
   }
 }

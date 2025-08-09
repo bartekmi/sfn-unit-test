@@ -2,16 +2,17 @@ namespace sfn_ut.sfn;
 
 public enum StepType {
   Lambda,
+  Wait,
   Error,
 
-  // Related to Await
-  Await,
-  IsComplete,
+  // Related to Lambda-Loop
+  LambdaLoop,
+  LambdaLoopIsComplete,
 
   // Related to InvokeNested
   InvokeNested,
-  Transform,
-  Merge,
+  InputAdapter,
+  OutputAdapter,
 
   // Related to Parallel
   Parallel,

@@ -1,4 +1,5 @@
 using sfn_ut.sfn.lambda;
+using sfn_ut.sfn.wait;
 using sfn_ut.sfn.nested;
 using sfn_ut.sfn.await;
 using sfn_ut.sfn.error;
@@ -33,37 +34,44 @@ public abstract class SfnWorkflow<PAYLOAD> {
 
     try {
       return lambda.Execute(input);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       HandleErrorInternal(input, e);
       throw;
     }
   }
 
-  public PAYLOAD LambdaWithAwait(
+  public void Wait(string stepName, TimeSpan duration) {
+    Steps.Add(new SfnWait<PAYLOAD>(stepName, duration));
+  }
+
+  public PAYLOAD LambdaLoop(
     SfnLambda<PAYLOAD> lambda,
     SfnIsComplete<PAYLOAD> isComplete,
     PAYLOAD payload
     ) {
-    SfnLambdaWithAwait<PAYLOAD> lambdaWithAwait = new(lambda, isComplete);
+    SfnLambdaWithLoop<PAYLOAD> lambdaWithAwait = new(lambda, isComplete);
     Steps.Add(lambdaWithAwait);
 
     try {
       return lambdaWithAwait.Execute(payload);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       HandleErrorInternal(payload, e);
       throw;
     }
   }
 
   public PAYLOAD Parallel(List<SfnStepWithPayload<PAYLOAD>> steps, SfnParallelResultsAssembler<PAYLOAD> assembler, PAYLOAD payload) {
-    SfnParallel<PAYLOAD> parallel = new (steps, assembler);
+    SfnParallel<PAYLOAD> parallel = new(steps, assembler);
 
     Steps.Add(parallel);
     Steps.Add(assembler);
 
     try {
       return parallel.Execute(payload);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       HandleErrorInternal(payload, e);
       throw;
     }
@@ -71,11 +79,11 @@ public abstract class SfnWorkflow<PAYLOAD> {
 
   public PAYLOAD NestedSfn<CHILD>(
     SfnTransform<PAYLOAD, CHILD> transform,
-    SfnWorkflow<CHILD> nested, 
-    SfnMerge<PAYLOAD,CHILD> merge,
+    SfnWorkflow<CHILD> nested,
+    SfnMerge<PAYLOAD, CHILD> merge,
     PAYLOAD payload) {
 
-    SfnWorkflowInvocation<PAYLOAD,CHILD> nestedInvocation = new (transform, nested, merge);
+    SfnWorkflowInvocation<PAYLOAD, CHILD> nestedInvocation = new(transform, nested, merge);
 
     Steps.Add(transform);
     Steps.Add(nestedInvocation);
@@ -83,7 +91,8 @@ public abstract class SfnWorkflow<PAYLOAD> {
 
     try {
       return nestedInvocation.Execute(payload);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       HandleErrorInternal(payload, e);
       throw;
     }

@@ -10,28 +10,30 @@ public class ParentWorkflow : SfnWorkflow<ParentPayload> {
   }
 
   public override ParentPayload Run(ParentPayload payload) {
-    payload = Lambda(new Step10_AppendTen(), payload);
+    payload = Lambda(new Step10_Lambda(), payload);
 
     payload = NestedSfn(
-      new Step20_Input_InvokeChild(),
-      new ChildWorkflow(), 
-      new Step20_Output_InvokeChild(),
-      payload);
-    
-    payload = Lambda(new Step30_AppendThirty(), payload);
-
-    payload = Parallel([ 
-        new Step40a_Foo(), 
-        new Step40b_Bar()
-      ], 
-      new Step40_Assember(),
+      new Step20_Nested_InputAdapter(),
+      new ChildWorkflow(),
+      new Step20_Nested_OutputAdapter(),
       payload);
 
-    payload = LambdaWithAwait(
-      new Step50_AsyncOp(),
-      new Step50_AsyncOpIsComplete(),
+    payload = Lambda(new Step30_Lambda(), payload);
+
+    payload = Parallel([
+        new Step40_Parallel_LambdaA(),
+        new Step40_Parallel_LambdaB()
+      ],
+      new Step40_Parallel_Assember(),
+      payload);
+
+    payload = LambdaLoop(
+      new Step50_LambdaLoop(),
+      new Step50_LambdaLoopGet(),
       payload
     );
+
+    Wait("WaitAtEnd", TimeSpan.FromSeconds(2));
 
     return payload;
   }

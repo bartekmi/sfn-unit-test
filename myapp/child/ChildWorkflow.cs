@@ -8,9 +8,9 @@ public class ChildWorkflow : SfnWorkflow<ChildPayload> {
   }
 
   public override ChildPayload Run(ChildPayload payload) {
-    payload = Lambda(new Step10_AppendTen(), payload);
-    payload = Lambda(new Step20_AddStars(), payload);
-    
+    payload = Lambda(new Step10_Lambda(), payload);
+    payload = Lambda(new Step20_Lambda(), payload);
+
     return payload;
   }
 }
