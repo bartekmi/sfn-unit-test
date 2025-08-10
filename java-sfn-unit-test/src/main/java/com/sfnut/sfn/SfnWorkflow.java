@@ -5,7 +5,6 @@ import com.sfnut.sfn.lambda.SfnLambda;
 import com.sfnut.sfn.lambdawithloop.SfnIsComplete;
 import com.sfnut.sfn.lambdawithloop.SfnLambdaWithLoop;
 import com.sfnut.sfn.nested.SfnMerge;
-import com.sfnut.sfn.nested.SfnMergeInput;
 import com.sfnut.sfn.nested.SfnTransform;
 import com.sfnut.sfn.nested.SfnWorkflowInvocation;
 import com.sfnut.sfn.parallel.SfnParallel;

@@ -8,7 +8,7 @@ public class Step20_Nested_OutputAdapter extends SfnMerge<ParentPayload, ChildPa
     @Override
     public ParentPayload execute(SfnMergeInput<ParentPayload, ChildPayload> input) {
         input.getParent().setHappyPathData(input.getChild().getHappyPathData());
-        input.getParent().setDataFromChild(input.getChild().getServiceChargeInDollars());
+        input.getParent().setDataFromChild(input.getChild().getNestedFromParent());
 
         return input.getParent();
     }

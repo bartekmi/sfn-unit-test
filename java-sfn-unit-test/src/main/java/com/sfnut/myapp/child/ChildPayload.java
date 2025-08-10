@@ -6,12 +6,8 @@ public class ChildPayload {
     @JsonProperty("HappyPathData")
     private String happyPathData;
     
-    @JsonProperty("ServiceChargeInDollars")
-    private int serviceChargeInDollars;
-
-    public ChildPayload(String fromParent) {
-        this.happyPathData = fromParent;
-    }
+    @JsonProperty("NestedFromParent")
+    private String nestedFromParent;
 
     public ChildPayload() {}
 
@@ -19,6 +15,6 @@ public class ChildPayload {
     public String getHappyPathData() { return happyPathData; }
     public void setHappyPathData(String happyPathData) { this.happyPathData = happyPathData; }
     
-    public int getServiceChargeInDollars() { return serviceChargeInDollars; }
-    public void setServiceChargeInDollars(int serviceChargeInDollars) { this.serviceChargeInDollars = serviceChargeInDollars; }
+    public String getNestedFromParent() { return nestedFromParent; }
+    public void setNestedFromParent(String nestedFromParent) { this.nestedFromParent = nestedFromParent; }
 }

@@ -7,7 +7,7 @@ public class ParentPayload {
     private String happyPathData;
     
     @JsonProperty("DataFromChild")
-    private Integer dataFromChild;
+    private String dataFromChild;
     
     @JsonProperty("ParallelA")
     private String parallelA;
@@ -20,19 +20,26 @@ public class ParentPayload {
     
     @JsonProperty("LambdaLoopIteration")
     private int lambdaLoopIteration;
+    
+    @JsonProperty("NestedObject")
+    private NestedObject nestedObject;
 
-    public ParentPayload(String originalInput) {
+    public ParentPayload(String originalInput, NestedObject nestedObject) {
         this.happyPathData = originalInput;
+        this.nestedObject = nestedObject;
     }
 
     public ParentPayload() {}
 
     // Getters and setters
+    public NestedObject getNestedObject() { return nestedObject; }
+    public void setNestedObject(NestedObject nestedObject) { this.nestedObject = nestedObject; }
+    
     public String getHappyPathData() { return happyPathData; }
     public void setHappyPathData(String happyPathData) { this.happyPathData = happyPathData; }
     
-    public Integer getDataFromChild() { return dataFromChild; }
-    public void setDataFromChild(Integer dataFromChild) { this.dataFromChild = dataFromChild; }
+    public String getDataFromChild() { return dataFromChild; }
+    public void setDataFromChild(String dataFromChild) { this.dataFromChild = dataFromChild; }
     
     public String getParallelA() { return parallelA; }
     public void setParallelA(String parallelA) { this.parallelA = parallelA; }

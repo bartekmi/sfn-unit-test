@@ -6,7 +6,8 @@ public class Step20_Lambda extends SfnLambda<ChildPayload> {
     @Override
     public ChildPayload execute(ChildPayload input) {
         input.setHappyPathData(input.getHappyPathData() + " > Child 20");
-        input.setServiceChargeInDollars(100);
+        input.setNestedFromParent("***" + input.getNestedFromParent() + "***");
+
         return input;
     }
 }
