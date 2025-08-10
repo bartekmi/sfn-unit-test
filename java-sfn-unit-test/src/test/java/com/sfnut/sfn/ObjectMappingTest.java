@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
 
 public class ObjectMappingTest {
     
@@ -76,14 +77,12 @@ public class ObjectMappingTest {
         NestedObject nested = new NestedObject(42);
         Input input = new Input("Hello World", "Unused Field", nested);
         
-        // Create object mapping with string-based field mappings
+        // Create object mapping with Map-based field mappings
         ObjectMapping<Input, Output> mapping = new ObjectMapping<>(
             Output.class,
-            List.of(
-                // Simple field mapping
-                new FieldMapping<>("o1", "f1"),
-                // Nested field mapping
-                new FieldMapping<>("o2", "nst.n1")
+            Map.of(
+                "o1", "f1",        // Simple field mapping
+                "o2", "nst.n1"     // Nested field mapping
             )
         );
         
@@ -103,11 +102,9 @@ public class ObjectMappingTest {
         
         ObjectMapping<Input, Output> mapping = new ObjectMapping<>(
             Output.class,
-            List.of(
-                // Simple field mapping should work
-                new FieldMapping<>("o1", "f1"),
-                // Nested field mapping should handle null gracefully
-                new FieldMapping<>("o2", "nst.n1")
+            Map.of(
+                "o1", "f1",        // Simple field mapping should work
+                "o2", "nst.n1"     // Nested field mapping should handle null gracefully
             )
         );
         
@@ -164,12 +161,12 @@ public class ObjectMappingTest {
         Level2 level2 = new Level2(level3);
         Level1 input = new Level1(level2);
         
-        // Create object mapping with multi-level nesting using string paths
+        // Create object mapping with multi-level nesting using Map syntax
         ObjectMapping<Level1, Output> mapping = new ObjectMapping<>(
             Output.class,
-            List.of(
-                new FieldMapping<>("o1", "level2.level3.value"),
-                new FieldMapping<>("o2", "level2.level3.number")
+            Map.of(
+                "o1", "level2.level3.value",
+                "o2", "level2.level3.number"
             )
         );
         
@@ -210,9 +207,8 @@ public class ObjectMappingTest {
         
         ObjectMapping<CollectionInput, Output> mapping = new ObjectMapping<>(
             Output.class,
-            List.of(
-                // Array indexing
-                new FieldMapping<>("o1", "items[1]")  // "second"
+            Map.of(
+                "o1", "items[1]"  // Array indexing - should get "second"
             )
         );
         
@@ -240,8 +236,8 @@ public class ObjectMappingTest {
         
         ObjectMapping<Input, InvalidOutput> mapping = new ObjectMapping<>(
             InvalidOutput.class,
-            List.of(
-                new FieldMapping<>("value", "f1")
+            Map.of(
+                "value", "f1"
             )
         );
         
@@ -249,44 +245,68 @@ public class ObjectMappingTest {
         assertThrows(RuntimeException.class, () -> mapping.map(input));
     }
     
+    
     @Test
-    @DisplayName("Test path segment extraction for code generation")
-    public void testPathSegmentExtraction() {
-        // Test that we can extract path information for code generation
-        FieldMapping<Output, Input> simpleMapping = new FieldMapping<>("o1", "f1");
-        FieldMapping<Output, Input> nestedMapping = new FieldMapping<>("o2", "nst.n1");
+    @DisplayName("Test new Map-based syntax for cleaner field mapping")
+    public void testMapBasedSyntax() {
+        // Create test input
+        NestedObject nested = new NestedObject(99);
+        Input input = new Input("Map Syntax Test", "Unused", nested);
         
-        // Test simple path
-        assertEquals("o1", simpleMapping.getOutputProperty());
-        assertEquals("f1", simpleMapping.getPropertyPath());
-        assertEquals(List.of("f1"), simpleMapping.getPathSegmentNames());
+        // Create object mapping using the new cleaner Map.of() syntax
+        ObjectMapping<Input, Output> mapping = new ObjectMapping<>(
+            Output.class,
+            Map.of(
+                "o1", "f1",           // Simple field mapping
+                "o2", "nst.n1"        // Nested field mapping
+            )
+        );
         
-        // Test nested path
-        assertEquals("o2", nestedMapping.getOutputProperty());
-        assertEquals("nst.n1", nestedMapping.getPropertyPath());
-        assertEquals(List.of("nst", "n1"), nestedMapping.getPathSegmentNames());
+        // Perform mapping
+        Output output = mapping.map(input);
         
-        // Test path segments
-        List<FieldMapping.PathSegment> segments = nestedMapping.getPathSegments();
-        assertEquals(2, segments.size());
-        assertEquals("nst", segments.get(0).getPropertyName());
-        assertEquals("n1", segments.get(1).getPropertyName());
-        assertFalse(segments.get(0).isIndexed());
-        assertFalse(segments.get(1).isIndexed());
+        // Verify results
+        assertEquals("Map Syntax Test", output.getO1(), "o1 should be mapped from f1");
+        assertEquals(99, output.getO2(), "o2 should be mapped from nested n1");
     }
     
     @Test
-    @DisplayName("Test indexed path segment extraction")
-    public void testIndexedPathSegmentExtraction() {
-        FieldMapping<Output, CollectionInput> indexedMapping = new FieldMapping<>("o1", "items[2]");
+    @DisplayName("Test Map-based syntax with complex nesting and indexing")
+    public void testMapBasedSyntaxComplex() {
+        // Create deeply nested input with collections
+        Level3 level3 = new Level3("Complex Test", 456);
+        Level2 level2 = new Level2(level3);
+        Level1 level1Input = new Level1(level2);
         
-        assertEquals("items[2]", indexedMapping.getPropertyPath());
-        assertEquals(List.of("items"), indexedMapping.getPathSegmentNames());
+        CollectionInput collectionInput = new CollectionInput(
+            new String[]{"zero", "one", "two"},
+            Arrays.asList("tagA", "tagB", "tagC")
+        );
         
-        List<FieldMapping.PathSegment> segments = indexedMapping.getPathSegments();
-        assertEquals(1, segments.size());
-        assertEquals("items", segments.get(0).getPropertyName());
-        assertTrue(segments.get(0).isIndexed());
-        assertEquals(Integer.valueOf(2), segments.get(0).getIndex());
+        // Test multi-level nesting with Map syntax
+        ObjectMapping<Level1, Output> nestedMapping = new ObjectMapping<>(
+            Output.class,
+            Map.of(
+                "o1", "level2.level3.value",
+                "o2", "level2.level3.number"
+            )
+        );
+        
+        // Test array indexing with Map syntax
+        ObjectMapping<CollectionInput, Output> indexMapping = new ObjectMapping<>(
+            Output.class,
+            Map.of(
+                "o1", "items[2]"  // Should get "two"
+            )
+        );
+        
+        // Verify nested mapping
+        Output nestedOutput = nestedMapping.map(level1Input);
+        assertEquals("Complex Test", nestedOutput.getO1());
+        assertEquals(456, nestedOutput.getO2());
+        
+        // Verify indexed mapping
+        Output indexedOutput = indexMapping.map(collectionInput);
+        assertEquals("two", indexedOutput.getO1());
     }
 }

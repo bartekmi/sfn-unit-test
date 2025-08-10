@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FieldMapping<OUTPUT, INPUT> {
+class FieldMapping<OUTPUT, INPUT> {
     private final String outputProperty;
     private final String propertyPath;
     private final List<PathSegment> pathSegments;
