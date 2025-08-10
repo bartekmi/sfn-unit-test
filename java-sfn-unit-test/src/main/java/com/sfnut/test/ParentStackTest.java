@@ -22,10 +22,28 @@ public class ParentStackTest extends SfnUnitTest {
         SfnWorkflow<ParentPayload> workflow = new ParentWorkflow();
         ParentPayload output = workflow.run(input);
 
-        runTest("Parent", output, workflow);
+        String actual = runTest("Parent", output, workflow);
+
+        String expected = """
+{
+  "HappyPathData" : "Start > 10 > Child 10 > Child 20 > 30",
+  "DataFromChild" : "***NESTED***",
+  "ParallelA" : "Foo",
+  "ParallelB" : "Bar",
+  "AsyncOpStarted" : true,
+  "LambdaLoopIteration" : 5,
+  "NestedObject" : {
+    "NestedField" : "NESTED"
+  }
+}            
+            """;
+
+        if (!expected.trim().equals(actual.trim())) {
+          throw new Exception("Did not mtach: " + expected);
+        }
     }
 
-    private static <OUTPUT> void runTest(String name, OUTPUT output, SfnWorkflow<OUTPUT> workflow) 
+    private static <OUTPUT> String runTest(String name, OUTPUT workflowOutput, SfnWorkflow<OUTPUT> workflow) 
       throws Exception {
         System.out.println();
         System.out.println(">>>>>>>>>>> Running Test: " + name);
@@ -35,11 +53,13 @@ public class ParentStackTest extends SfnUnitTest {
         mapper.registerModule(new JavaTimeModule());
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        String json = mapper.writeValueAsString(output);
-        System.out.println(json);
-        System.out.println();
-
         String workflowStructure = mapper.writeValueAsString(workflow);
         System.out.println(workflowStructure);
+
+        String workflowOutputJson = mapper.writeValueAsString(workflowOutput);
+        System.out.println(workflowOutputJson);
+        System.out.println();
+
+        return workflowOutputJson;
     }
 }
