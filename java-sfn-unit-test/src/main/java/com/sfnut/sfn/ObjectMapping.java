@@ -12,9 +12,15 @@ public class ObjectMapping<INPUT, OUTPUT> {
     }
 
     public OUTPUT map(INPUT input) {
+      return mergeInto(input, null);
+    }
+
+    public OUTPUT mergeInto(INPUT input, OUTPUT output) {
         try {
-            // Create new instance of output class
-            OUTPUT output = outputClass.getDeclaredConstructor().newInstance();
+            if (output == null) {
+              // Create new instance of output class
+              output = outputClass.getDeclaredConstructor().newInstance();
+            }
             
             // Apply all field mappings
             for (FieldMapping<OUTPUT, INPUT> mapping : fieldMappings) {

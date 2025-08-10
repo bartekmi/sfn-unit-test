@@ -1,9 +1,13 @@
 package com.sfnut.myapp.parent;
 
+import com.sfnut.sfn.FieldMapping;
+import com.sfnut.sfn.ObjectMapping;
 import com.sfnut.sfn.SfnWorkflow;
+import com.sfnut.myapp.child.ChildPayload;
 import com.sfnut.myapp.child.ChildWorkflow;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 
 public class ParentWorkflow extends SfnWorkflow<ParentPayload> {
     
@@ -16,9 +20,17 @@ public class ParentWorkflow extends SfnWorkflow<ParentPayload> {
         payload = lambda(new Step10_Lambda(), payload);
 
         payload = nestedSfn(
-            new Step20_Nested_InputAdapter(),
+            new ObjectMapping<ParentPayload,ChildPayload>(ChildPayload.class, List.of(
+              new FieldMapping<>("happyPathData", "happyPathData"),
+              new FieldMapping<>("nestedFromParent", "nestedObject.nestedField")
+            )),
+
             new ChildWorkflow(),
-            new Step20_Nested_OutputAdapter(),
+
+            new ObjectMapping<ChildPayload,ParentPayload>(ParentPayload.class, List.of(
+              new FieldMapping<>("happyPathData", "happyPathData"),
+              new FieldMapping<>("dataFromChild", "nestedFromParent")
+            )),
             payload);
 
         payload = lambda(new Step30_Lambda(), payload);

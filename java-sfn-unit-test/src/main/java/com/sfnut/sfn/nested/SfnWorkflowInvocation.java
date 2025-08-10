@@ -1,5 +1,6 @@
 package com.sfnut.sfn.nested;
 
+import com.sfnut.sfn.ObjectMapping;
 import com.sfnut.sfn.SfnStepWithPayload;
 import com.sfnut.sfn.SfnWorkflow;
 import com.sfnut.sfn.StepType;
@@ -8,24 +9,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SfnWorkflowInvocation<PARENT, CHILD> extends SfnStepWithPayload<PARENT> {
     @JsonIgnore
-    private SfnTransform<PARENT, CHILD> transformInput;
+    private ObjectMapping<PARENT, CHILD> parentToChild;
     
     @JsonIgnore
     private SfnWorkflow<CHILD> nested;
     
     @JsonIgnore
-    private SfnMerge<PARENT, CHILD> mergeOutput;
+    private ObjectMapping<CHILD, PARENT> childToParent;
     
     @JsonProperty("NestedWorkflowName")
     private String nestedWorkflowName;
 
-    public SfnWorkflowInvocation(SfnTransform<PARENT, CHILD> transformInput,
+    public SfnWorkflowInvocation(ObjectMapping<PARENT, CHILD> parentToChild,
                                 SfnWorkflow<CHILD> nested,
-                                SfnMerge<PARENT, CHILD> mergeOutput) {
+                                ObjectMapping<CHILD, PARENT> childToParent) {
         super(StepType.INVOKE_NESTED);
-        this.transformInput = transformInput;
+        this.parentToChild = parentToChild;
         this.nested = nested;
-        this.mergeOutput = mergeOutput;
+        this.childToParent = childToParent;
         this.nestedWorkflowName = nested.getWorkflowName();
     }
 
@@ -36,43 +37,24 @@ public class SfnWorkflowInvocation<PARENT, CHILD> extends SfnStepWithPayload<PAR
 
     @Override
     public PARENT execute(PARENT payload) {
-        CHILD childIn = transformInput.execute(payload);
+        CHILD childIn = parentToChild.map(payload);
         CHILD childOut = nested.run(childIn);
-        return mergeOutput.execute(new SfnMergeInput<>(payload, childOut));
+        return childToParent.mergeInto(childOut, payload);
     }
 
-    public SfnTransform<PARENT, CHILD> getTransformInput() {
-        return transformInput;
-    }
-
-    public void setTransformInput(SfnTransform<PARENT, CHILD> transformInput) {
-        this.transformInput = transformInput;
+    public ObjectMapping<PARENT, CHILD> getParentToChild() {
+        return parentToChild;
     }
 
     public SfnWorkflow<CHILD> getNested() {
         return nested;
     }
 
-    public void setNested(SfnWorkflow<CHILD> nested) {
-        this.nested = nested;
-        if (nested != null) {
-            this.nestedWorkflowName = nested.getWorkflowName();
-        }
-    }
-
-    public SfnMerge<PARENT, CHILD> getMergeOutput() {
-        return mergeOutput;
-    }
-
-    public void setMergeOutput(SfnMerge<PARENT, CHILD> mergeOutput) {
-        this.mergeOutput = mergeOutput;
+    public ObjectMapping<CHILD, PARENT> getChildToParent() {
+        return childToParent;
     }
 
     public String getNestedWorkflowName() {
         return nestedWorkflowName;
-    }
-
-    public void setNestedWorkflowName(String nestedWorkflowName) {
-        this.nestedWorkflowName = nestedWorkflowName;
     }
 }

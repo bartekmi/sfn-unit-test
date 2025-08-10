@@ -4,8 +4,6 @@ import com.sfnut.sfn.error.SfnErrorHandlerInput;
 import com.sfnut.sfn.lambda.SfnLambda;
 import com.sfnut.sfn.lambdawithloop.SfnIsComplete;
 import com.sfnut.sfn.lambdawithloop.SfnLambdaWithLoop;
-import com.sfnut.sfn.nested.SfnMerge;
-import com.sfnut.sfn.nested.SfnTransform;
 import com.sfnut.sfn.nested.SfnWorkflowInvocation;
 import com.sfnut.sfn.parallel.SfnParallel;
 import com.sfnut.sfn.parallel.SfnParallelResultsAssembler;
@@ -83,16 +81,14 @@ public abstract class SfnWorkflow<PAYLOAD> {
         }
     }
 
-    public <CHILD> PAYLOAD nestedSfn(SfnTransform<PAYLOAD, CHILD> transform,
+    public <CHILD> PAYLOAD nestedSfn(ObjectMapping<PAYLOAD, CHILD> parentToChild,
                                     SfnWorkflow<CHILD> nested,
-                                    SfnMerge<PAYLOAD, CHILD> merge,
+                                    ObjectMapping<CHILD, PAYLOAD> childToParent,
                                     PAYLOAD payload) {
         SfnWorkflowInvocation<PAYLOAD, CHILD> nestedInvocation = 
-            new SfnWorkflowInvocation<>(transform, nested, merge);
+            new SfnWorkflowInvocation<>(parentToChild, nested, childToParent);
 
-        steps.add(transform);
         steps.add(nestedInvocation);
-        steps.add(merge);
 
         try {
             return nestedInvocation.execute(payload);
