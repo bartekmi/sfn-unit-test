@@ -7,22 +7,37 @@ public class FieldMapping<OUTPUT, INPUT> {
     private final BiConsumer<OUTPUT, Object> setter;
     private final Function<INPUT, Object> valueExtractor;
 
-    // Constructor for simple field mapping: Output::field <- Input::field
-    public <T> FieldMapping(BiConsumer<OUTPUT, T> setter, Function<INPUT, T> getter) {
-        this.setter = (output, value) -> setter.accept(output, (T) value);
-        this.valueExtractor = input -> getter.apply(input);
-    }
-
-    // Constructor for nested field mapping: Output::field <- Input::nested.field
-    public <T, NESTED> FieldMapping(BiConsumer<OUTPUT, T> setter, Function<INPUT, NESTED> nestedGetter, Function<NESTED, T> fieldGetter) {
+    // Constructor for arbitrary nested field mapping using varargs
+    // Usage examples:
+    // Simple: new FieldMapping<>(Output::setField, Input::getField)
+    // Nested: new FieldMapping<>(Output::setField, Input::getNested, Nested::getField)
+    // Multi-nested: new FieldMapping<>(Output::setField, Input::getA, A::getB, B::getC, C::getValue)
+    @SafeVarargs
+    public <T> FieldMapping(BiConsumer<OUTPUT, T> setter, Function<INPUT, ?> firstGetter, Function<?, ?>... nestedGetters) {
         this.setter = (output, value) -> {
             if (value != null) {
-                setter.accept(output, (T) value);
+                @SuppressWarnings("unchecked")
+                T typedValue = (T) value;
+                setter.accept(output, typedValue);
             }
         };
+        
         this.valueExtractor = input -> {
-            NESTED nested = nestedGetter.apply(input);
-            return nested != null ? fieldGetter.apply(nested) : null;
+            // Apply the first getter
+            Object current = firstGetter.apply(input);
+            
+            // Chain through the nested getters
+            for (Function<?, ?> getter : nestedGetters) {
+                if (current == null) {
+                    return null; // Short-circuit on null
+                }
+                
+                @SuppressWarnings("unchecked")
+                Function<Object, Object> typedGetter = (Function<Object, Object>) getter;
+                current = typedGetter.apply(current);
+            }
+            
+            return current;
         };
     }
 

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
+import java.util.function.Function;
 
 public class ObjectMappingTest {
     
@@ -69,18 +70,21 @@ public class ObjectMappingTest {
     }
     
     @Test
-    @DisplayName("Test basic object mapping with simple and nested fields")
-    public void testBasicObjectMapping() {
+    @DisplayName("Test comprehensive object mapping with simple and nested fields")
+    public void testComprehensiveObjectMapping() {
         // Create test input
         NestedObject nested = new NestedObject(42);
         Input input = new Input("Hello World", "Unused Field", nested);
         
-        // Create object mapping
+        // Create object mapping with both simple and nested field mappings
         ObjectMapping<Input, Output> mapping = new ObjectMapping<>(
             Output.class,
             List.of(
-                new FieldMapping<>(Output::setO1, Input::getF1),
-                new FieldMapping<>(Output::setO2, Input::getNst, NestedObject::getN1)
+                // Simple field mapping (single getter)
+                new FieldMapping<Output, Input>(Output::setO1, Input::getF1),
+                // Nested field mapping (multiple getters)
+                new FieldMapping<Output, Input>(Output::setO2, Input::getNst, 
+                    (Function<NestedObject, Integer>) NestedObject::getN1)
             )
         );
         
@@ -101,8 +105,11 @@ public class ObjectMappingTest {
         ObjectMapping<Input, Output> mapping = new ObjectMapping<>(
             Output.class,
             List.of(
-                new FieldMapping<>(Output::setO1, Input::getF1),
-                new FieldMapping<>(Output::setO2, Input::getNst, NestedObject::getN1)
+                // Simple field mapping should work
+                new FieldMapping<Output, Input>(Output::setO1, Input::getF1),
+                // Nested field mapping should handle null gracefully
+                new FieldMapping<Output, Input>(Output::setO2, Input::getNst, 
+                    (Function<NestedObject, Integer>) NestedObject::getN1)
             )
         );
         
@@ -113,18 +120,73 @@ public class ObjectMappingTest {
         assertEquals(0, output.getO2(), "o2 should be 0 (default int value when null)");
     }
     
-    // Static inner classes for the multiple fields test
-    public static class MultiInput {
-        private String field1;
-        private String field2;
+    // Test classes for multi-level nesting
+    public static class Level1 {
+        private Level2 level2;
         
-        public MultiInput(String field1, String field2) {
-            this.field1 = field1;
-            this.field2 = field2;
+        public Level1() {}
+        public Level1(Level2 level2) { this.level2 = level2; }
+        
+        public Level2 getLevel2() { return level2; }
+        public void setLevel2(Level2 level2) { this.level2 = level2; }
+    }
+    
+    public static class Level2 {
+        private Level3 level3;
+        
+        public Level2() {}
+        public Level2(Level3 level3) { this.level3 = level3; }
+        
+        public Level3 getLevel3() { return level3; }
+        public void setLevel3(Level3 level3) { this.level3 = level3; }
+    }
+    
+    public static class Level3 {
+        private String value;
+        private int number;
+        
+        public Level3() {}
+        public Level3(String value, int number) { 
+            this.value = value; 
+            this.number = number;
         }
         
-        public String getField1() { return field1; }
-        public String getField2() { return field2; }
+        public String getValue() { return value; }
+        public void setValue(String value) { this.value = value; }
+        
+        public int getNumber() { return number; }
+        public void setNumber(int number) { this.number = number; }
+    }
+    
+    @Test
+    @DisplayName("Test multi-level nested field mapping")
+    public void testMultiLevelNesting() {
+        // Create deeply nested input
+        Level3 level3 = new Level3("Deep Value", 123);
+        Level2 level2 = new Level2(level3);
+        Level1 input = new Level1(level2);
+        
+        // Create object mapping with multi-level nesting using explicit Function casting
+        ObjectMapping<Level1, Output> mapping = new ObjectMapping<>(
+            Output.class,
+            List.of(
+                new FieldMapping<Output, Level1>(Output::setO1, 
+                    Level1::getLevel2, 
+                    (Function<Level2, Level3>) Level2::getLevel3, 
+                    (Function<Level3, String>) Level3::getValue),
+                new FieldMapping<Output, Level1>(Output::setO2, 
+                    Level1::getLevel2, 
+                    (Function<Level2, Level3>) Level2::getLevel3, 
+                    (Function<Level3, Integer>) Level3::getNumber)
+            )
+        );
+        
+        // Perform mapping
+        Output output = mapping.map(input);
+        
+        // Verify results
+        assertEquals("Deep Value", output.getO1(), "o1 should be mapped from deeply nested value");
+        assertEquals(123, output.getO2(), "o2 should be mapped from deeply nested number");
     }
     
     @Test
@@ -147,7 +209,7 @@ public class ObjectMappingTest {
         ObjectMapping<Input, InvalidOutput> mapping = new ObjectMapping<>(
             InvalidOutput.class,
             List.of(
-                new FieldMapping<>(InvalidOutput::setValue, Input::getF1)
+                new FieldMapping<InvalidOutput, Input>(InvalidOutput::setValue, Input::getF1)
             )
         );
         
