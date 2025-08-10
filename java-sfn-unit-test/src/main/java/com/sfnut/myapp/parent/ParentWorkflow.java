@@ -39,7 +39,10 @@ public class ParentWorkflow extends SfnWorkflow<ParentPayload> {
                 new Step40_Parallel_LambdaA(),
                 new Step40_Parallel_LambdaB()
             ),
-            new Step40_Parallel_Assember(),
+            new ObjectMapping<List<ParentPayload>,ParentPayload>(ParentPayload.class, Map.of(
+              "parallelA", "[0].parallelA",
+              "parallelB", "[1].parallelB"
+            )),
             payload);
 
         payload = lambdaLoop(

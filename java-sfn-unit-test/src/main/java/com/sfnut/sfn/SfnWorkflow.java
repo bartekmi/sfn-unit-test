@@ -6,7 +6,6 @@ import com.sfnut.sfn.lambdawithloop.SfnIsComplete;
 import com.sfnut.sfn.lambdawithloop.SfnLambdaWithLoop;
 import com.sfnut.sfn.nested.SfnWorkflowInvocation;
 import com.sfnut.sfn.parallel.SfnParallel;
-import com.sfnut.sfn.parallel.SfnParallelResultsAssembler;
 import com.sfnut.sfn.wait.SfnWait;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -66,12 +65,12 @@ public abstract class SfnWorkflow<PAYLOAD> {
     }
 
     public PAYLOAD parallel(List<SfnStepWithPayload<PAYLOAD>> stepList,
-                           SfnParallelResultsAssembler<PAYLOAD> assembler,
-                           PAYLOAD payload) {
+                            ObjectMapping<List<PAYLOAD>, PAYLOAD> assembler,
+                            PAYLOAD payload) {
+
         SfnParallel<PAYLOAD> parallel = new SfnParallel<>(stepList, assembler);
 
         steps.add(parallel);
-        steps.add(assembler);
 
         try {
             return parallel.execute(payload);

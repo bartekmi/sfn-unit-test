@@ -1,5 +1,6 @@
 package com.sfnut.sfn.parallel;
 
+import com.sfnut.sfn.ObjectMapping;
 import com.sfnut.sfn.SfnStepWithPayload;
 import com.sfnut.sfn.StepType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,10 +13,10 @@ public class SfnParallel<PAYLOAD> extends SfnStepWithPayload<PAYLOAD> {
     private List<SfnStepWithPayload<PAYLOAD>> parallelFlows = new ArrayList<>();
     
     @JsonIgnore
-    private SfnParallelResultsAssembler<PAYLOAD> resultsAssembler;
+    private ObjectMapping<List<PAYLOAD>, PAYLOAD> resultsAssembler;
 
     public SfnParallel(List<SfnStepWithPayload<PAYLOAD>> parallelFlows, 
-                       SfnParallelResultsAssembler<PAYLOAD> resultsAssembler) {
+                       ObjectMapping<List<PAYLOAD>, PAYLOAD> resultsAssembler) {
         super(StepType.PARALLEL);
         this.parallelFlows = parallelFlows;
         this.resultsAssembler = resultsAssembler;
@@ -36,22 +37,6 @@ public class SfnParallel<PAYLOAD> extends SfnStepWithPayload<PAYLOAD> {
             results.add(flow.execute(payload));
         }
 
-        return resultsAssembler.execute(payload, results);
-    }
-
-    public List<SfnStepWithPayload<PAYLOAD>> getParallelFlows() {
-        return parallelFlows;
-    }
-
-    public void setParallelFlows(List<SfnStepWithPayload<PAYLOAD>> parallelFlows) {
-        this.parallelFlows = parallelFlows;
-    }
-
-    public SfnParallelResultsAssembler<PAYLOAD> getResultsAssembler() {
-        return resultsAssembler;
-    }
-
-    public void setResultsAssembler(SfnParallelResultsAssembler<PAYLOAD> resultsAssembler) {
-        this.resultsAssembler = resultsAssembler;
+        return resultsAssembler.mergeInto(results, payload);
     }
 }
